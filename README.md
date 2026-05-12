@@ -1,103 +1,198 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/vAcMEFxW)
-# DeliverUS-Solution
+﻿# Guía de Estudio para el Examen de Frontend
 
-## DeliverUS
+[Enlace a exámenes anteriores](https://github.com/orgs/IISSI2-IS-2025/repositories)
 
-Puede encontrar la documentación de DeliverUS en: <https://github.com/IISSI2-IS>
+---
 
-## Introducción
+## Funciones reutilizables
 
-Este repositorio incluye el backend completo (carpeta `DeliverUS-Backend`), el frontend de `customer` (carpeta `DeliverUS-Frontend-Customer`) el frontend de `owner` (carpeta `DeliverUS-Frontend-Owner`).
+### Fetch (Petición de detalles)
+```javascript
+    try {
+      const fetchedXXX = await getDetail(route.params.id) // Id de lo que se busque, mirar función
+      setXXX(fetchedXXX)
+    } catch (error) {
+      showMessage({
+        message: `There was an error while retrieving XXXXX (id ${route.params.id}). ${error}`,
+        type: "error",
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+```
 
-## Preparación del entorno
+### Update (Actualizar entidad)
+```javascript
+    setBackendErrors([])
+    try {
+      const updatedProduct = await update(product.id, values)
+      showMessage({
+        message: `Product ${updatedProduct.name} succesfully updated`,
+        type: "success",
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+      navigation.navigate("RestaurantDetailScreen", { id: product.restaurantId })
+    } catch (error) {
+      console.log(error)
+      setBackendErrors(error.errors)
+    }
+```
 
-### a) Windows
+### DeleteModal (Componente Modal)
+```jsx
+          <DeleteModal
+            isVisible={schedulesToBeDeleted !== null}
+            onCancel={() => setSchedulesToBeDeleted(null)}
+            onConfirm={() => remove(schedulesToBeDeleted)}>
+              <TextRegular>¿Estás seguro?</TextRegular>
+          </DeleteModal>
+```
 
-* Abra un terminal y ejecute el comando `npm run install:all:win`.
+### Remove (Eliminación con petición)
+```javascript 
+  setBackendErrors([])
+    try {
+      await remove(id_de_la_cosa)
+      await fetchDetalles()
+      setCosaToBeDeleted(null)
+      showMessage({
+        message: `Cosa succesfully removed`,
+        type: "success",
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    } catch (error) {
+      console.log(error)
+      setCosaToBeDeleted(null)
+      showMessage({
+        message: `Cosa could not be removed.`,
+        type: "error",
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+```
 
-### b) Linux/MacOS
+### Esquema Base Formik
+```jsx
+<Formik
+      validationSchema={validationSchema} 
+      initialValues={initialScheduleValues}
+      onSubmit={update_o_accion}>
+      {({ handleSubmit, setFieldValue, values }) => (
+        <ScrollView>
+          <View style={{ alignItems: "center" }}>
+            <View style={{ width: "60%" }}>
+              <InputItem
+                name="startTime"
+                label="Start Time (HH:mm:ss):"
+              />
+              <InputItem
+                name="endTime" // Nombre en el modelo
+                label="End Time (HH:mm:ss):" // Como se muestra
+              />
 
-* Abra un terminal y ejecute el comando `npm run install:all:bash`.
+              {backendErrors &&
+                backendErrors.map((error, index) => <TextError key={index}>{error.param}-{error.msg}</TextError>)
+              }
 
-## Ejecución
+              <Pressable
+                onPress={ handleSubmit }
+                style={({ pressed }) => [
+                  {
+                    backgroundColor: pressed
+                      ? GlobalStyles.brandSuccessTap
+                      : GlobalStyles.brandSuccess
+                  },
+                  styles.button
+                ]}>
+                <View style={[{ flex: 1, flexDirection: "row", justifyContent: "center" }]}>
+                  <MaterialCommunityIcons name="content-save" color={"white"} size={20}/>
+                  <TextRegular textStyle={styles.text}>
+                    Save
+                  </TextRegular>
+                </View>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      )}
+    </Formik>
+```
 
-### 1. Backend
+---
 
-* Para **rehacer las migraciones y seeders**, abra un terminal y ejecute el comando
+## Estilos reutilizables
 
-    ```Bash
-    npm run migrate:backend
-    ```
+![alt text](image.png)
 
-* Para **ejecutarlo**, abra un terminal y ejecute el comando
+### Estructura de componente y acciones
+```jsx
+ <View style={styles.addressContainer}>
+      <TextSemiBold>{item.alias}</TextSemiBold>
+      <TextRegular>{item.street}, {item.city}, {item.province}, {item.zipCode}</TextRegular>
+      <View style={styles.actions}>
+        <Pressable
+          onPress={() => setAddressAsDefault(item)}
+          style={({ pressed }) => [{
+            padding: 5,
+            borderRadius: 4,
+            backgroundColor: pressed ? brandPrimaryTap : "transparent"
+          }]}
+        >
+          <Ionicons name={item.isDefault ? "star" : "star-outline"} size={24} color={brandPrimary} />
+        </Pressable>
+        <Pressable
+          onPress={() => setAddressToBeDeleted(item)}
+          style={({ pressed }) => [{
+            padding: 5,
+            borderRadius: 4,
+            backgroundColor: pressed ? "rgba(255,0,0,0.2)" : "transparent"
+          }]}
+        >
+          <Ionicons name="trash" size={24} color="red" />
+        </Pressable>
+      </View>
+    </View>
+```
 
-    ```Bash
-    npm run start:backend
-    ```
+### Clase StyleSheet
+```javascript
+ addressContainer: {
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  }
+```
 
-### 2. Frontend
+### Centrado Horizontal Completo
+Para alinear elementos en la misma fila y centrarlos:
+```jsx
+<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+```
+> **Nota de Layout:** `alignItems` gestiona el espacio perpendicular a `flexDirection`, mientras que `justifyContent` gestiona el espacio paralelo.
 
-* Para **ejecutar la aplicación frontend de `customer`**, abra un nuevo terminal y ejecute el comando
+---
 
-    ```Bash
-    npm run start:frontend:customer
-    ```
+## Propagación y Manejo de Arrays
 
-* Para **ejecutar la aplicación frontend de `owner`**, abra un nuevo terminal y ejecute el comando
-
-    ```Bash
-    npm run start:frontend:owner
-    ```
-
-## Depuración
-
-* Para **depurar el backend**, asegúrese de que **NO** existe una instancia en ejecución, pulse en el botón `Run and Debug` de la barra lateral, seleccione `Debug Backend` en la lista desplegable, y pulse el botón de *Play*.
-
-* Para **depurar el frontend**, asegúrese de que **EXISTE** una instancia en ejecución del frontend que desee depurar, pulse en el botón `Run and Debug` de la barra lateral, seleccione `Debug Frontend` en la lista desplegable, y pulse el botón de *Play*.
-
-## Test
-
-* Para comprobar el correcto funcionamiento de backend puede ejecutar el conjunto de tests incluido a tal efecto. Para ello ejecute el siguiente comando:
-
-    ```Bash
-    npm run test:backend
-    ```
-
-Una vez complete correctamente los requisitos del backend, los tests deberían completarse satisfactoriamente.
-
-**Advertencia: Los tests no pueden ser modificados.**
-
-
-## Entregables
-
-### 1er Entregable
-
-Implementa los siguientes requisitos funcionales en el **backend**:
-
-| # | Requisito | Descripción |
-|---|-----------|-------------|
-| **RF4** | Confirmar nuevo pedido | Si se confirma, el pedido se crea con estado *pendiente* y se le aplica **BR1** *(pedidos > 10 € sin gastos de envío)*. Descartar pedidos es solo para el frontend. |
-| **RF5** | Listar pedidos confirmados | El cliente puede ver sus pedidos confirmados, ordenados del más reciente al más antiguo. |
-| **RF8** | Editar/eliminar pedido | Si el pedido está en estado *pendiente*, se pueden modificar o eliminar productos, cancelar el pedido completo, o cambiar la dirección de entrega. En estado *enviado* o *entregado* no se permite ninguna modificación. |
-
-> Asegúrate de que los tests automáticos del backend pasan correctamente.
-
-### 2º Entregable
-
-Implementa los siguientes requisitos funcionales en la aplicación frontend de `customer`:
-
-| # | Requisito | Descripción |
-|---|-----------|-------------|
-| **RF1** | Listado de restaurantes | El cliente puede consultar todos los restaurantes disponibles. |
-| **RF2** | Detalles y menú del restaurante | El cliente puede consultar los detalles de un restaurante y los productos que ofrece. |
-| **RF3** | Gestionar productos de un nuevo pedido | El cliente puede añadir varios productos (y varias unidades de cada uno) a un nuevo pedido. Antes de confirmarlo, puede editar cantidades o eliminar productos. |
-| **RF4** | Confirmar o descartar nuevo pedido | Si se confirma, el pedido se crea con estado *pendiente* y se le aplica **BR1**. Si se descarta, no se crea nada. |
-| **RF5** | Listar pedidos confirmados | El cliente puede ver sus pedidos confirmados, ordenados del más reciente al más antiguo. |
-| **RF6** | Ver detalles de un pedido | El cliente puede consultar todos los detalles de un pedido, incluidos los productos y sus precios. |
-| **RF7** | Top 3 productos | El cliente puede consultar los 3 productos más vendidos de todos los restaurantes. |
-
-Una vez desarrollados estos requisitos, puedes proceder a implementar:
-
-| # | Requisito | Descripción |
-|---|-----------|-------------|
-| **RF8** | Editar/eliminar pedido | Si el pedido está en estado *pendiente*, se pueden modificar o eliminar productos, cancelar el pedido completo, o cambiar la dirección de entrega. En estado *enviado* o *entregado* no se permite ninguna modificación. |
+### Mapeo de Datos Base
+Ejemplo de cómo añadir un valor por defecto al principio de un array de datos recuperados:
+```javascript
+      const fetchedScheduleReshaped = [{
+        label: "Not scheduled",
+        value: "none"
+      },
+      ...fetchedSchedule.map((e) => {
+        return {
+          label: `${e.startTime} - ${e.endTime}`,
+          value: e.id
+        }
+      })
+      ]
+```
